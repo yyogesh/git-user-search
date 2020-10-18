@@ -1,75 +1,58 @@
-import React, { useState } from 'react';
-
-import { makeStyles } from '@material-ui/core/styles';
+import React from 'react';
+import AppBar from '@material-ui/core/AppBar';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+import { useStyles } from '../hooks/useStyles';
+import { a11yProps } from '../utility';
+import { TabPanel } from './TabPanel';
+import UserSearch from './UserSearch';
+import HomeTab from './HomeTab';
+import Repo from './RepoTab';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
-import Avatar from '@material-ui/core/Avatar';
-import Chip from '@material-ui/core/Chip';
 
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        width: '100%',
-        maxWidth: 360,
-        backgroundColor: theme.palette.background.paper,
-    },
-    large: {
-        width: theme.spacing(20),
-        height: theme.spacing(20),
-    },
-    name: {
-        padding: '5px 10px',
-        fontWeight: 'bold'
-    },
-    login: {
-        padding: '10px'
-    }
-}));
-const Home = ({ userInfo }) => {
+export default function Home({ match }) {
+    console.log('match ==> ', match);
     const classes = useStyles();
-    const [following, setFollowing] = useState(userInfo.following)
-    const handleFollowingClick = () => {
-        setFollowing(prev => prev += 10);
+    const [value, setValue] = React.useState(0);
+    const [userInfo, setUserInfo] = React.useState(null);
+
+    const getUserInfo = (userInfo) => {
+        setUserInfo(userInfo);
+    }
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
     };
+
     return (
-        <div className={classes.root}>
-            <Card >
+        <div className="git-app">
+            <Card style={{ margin: '20px' }}>
                 <CardContent>
-                    <Avatar alt="git user" src={userInfo.avatar_url} className={classes.large} />
-                    <div className={classes.name}>
-                        {userInfo.name}
-                    </div>
-                    <div className={classes.login}>
-                        {userInfo.login}
-                    </div>
                     <div>
-                        <Chip
-                            avatar={<Avatar>{userInfo.followers}</Avatar>}
-                            label={`followers `}
-
-                            variant="outlined"
-                        />
-                        <Chip
-                            avatar={<Avatar>{following}</Avatar>}
-                            label={`following `}
-                            onClick={handleFollowingClick}
-                            variant="outlined"
-                        />
+                        <UserSearch getUserInfo={getUserInfo} params={match.params} />
                     </div>
-                    {/* <List component="nav" aria-label="secondary mailbox folders">
-                        {
-                            gitData.followers.map(item => (
-                                <ListItem>
-                                    <ListItemText primary={item} />
-                                </ListItem>
-                            ))
-                        }
-                    </List> */}
-
+                    {
+                        userInfo && userInfo.login && (
+                            <div>
+                                <AppBar position="static">
+                                    <Tabs value={value} onChange={handleChange} aria-label="simple tabs example">
+                                        <Tab label="Home" {...a11yProps(0)} />
+                                        <Tab label="Repos" {...a11yProps(2)} />
+                                    </Tabs>
+                                </AppBar>
+                                <TabPanel value={value} index={0}>
+                                    <HomeTab userInfo={userInfo} />
+                                </TabPanel>
+                                <TabPanel value={value} index={1}>
+                                    <Repo userInfo={userInfo} />
+                                </TabPanel>
+                            </div>
+                        )
+                    }
                 </CardContent>
             </Card>
         </div>
-    )
+    );
 }
-
-export default Home
